@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Moments</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #fff7f7; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        .moment { background: #ffe4e1; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        input, button { margin-top: 10px; padding: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Our Monthly Moments</h1>
+        <div id="moments"></div>
+        <input type="text" id="newMoment" placeholder="Add a moment..." />
+        <button onclick="addMoment()">Add</button>
+    </div>
+
+    <script>
+        let moments = JSON.parse(localStorage.getItem("moments")) || [];
+        
+        function renderMoments() {
+            document.getElementById("moments").innerHTML = moments.map(
+                (moment, index) => `<div class="moment">${moment} <button onclick="deleteMoment(${index})">❌</button></div>`
+            ).join("");
+        }
+
+        function addMoment() {
+            const momentText = document.getElementById("newMoment").value;
+            if (momentText) {
+                moments.push(momentText);
+                localStorage.setItem("moments", JSON.stringify(moments));
+                renderMoments();
+                document.getElementById("newMoment").value = "";
+            }
+        }
+
+        function deleteMoment(index) {
+            moments.splice(index, 1);
+            localStorage.setItem("moments", JSON.stringify(moments));
+            renderMoments();
+        }
+
+        renderMoments();
+    </script>
+</body>
+</html>
