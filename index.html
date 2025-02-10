@@ -2,49 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Moments</title>
+    <title>Our Love Story</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #fff7f7; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        .moment { background: #ffe4e1; padding: 10px; margin: 10px 0; border-radius: 5px; }
-        input, button { margin-top: 10px; padding: 8px; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #moments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .moment-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .moment-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        #moment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .delete-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📅 Our Monthly Moments</h1>
-        <div id="moments"></div>
-        <input type="text" id="newMoment" placeholder="Add a moment..." />
-        <button onclick="addMoment()">Add</button>
-    </div>
+    <h1>🌟 Our Love Story 💕</h1>
+    
+    <form id="moment-form">
+        <input type="month" id="moment-date" required>
+        <input type="text" id="moment-title" placeholder="Moment Title" required>
+        <textarea id="moment-description" placeholder="Description"></textarea>
+        <input type="file" id="moment-image" accept="image/*">
+        <button type="submit">Save Moment</button>
+    </form>
+
+    <div id="moments-list"></div>
 
     <script>
-        let moments = JSON.parse(localStorage.getItem("moments")) || [];
-        
-        function renderMoments() {
-            document.getElementById("moments").innerHTML = moments.map(
-                (moment, index) => `<div class="moment">${moment} <button onclick="deleteMoment(${index})">❌</button></div>`
-            ).join("");
-        }
+        // Ensure compatibility with older browsers
+        (function() {
+            var form = document.getElementById('moment-form');
+            var momentsList = document.getElementById('moments-list');
+            var moments = JSON.parse(localStorage.getItem('couplesMoments') || '[]');
 
-        function addMoment() {
-            const momentText = document.getElementById("newMoment").value;
-            if (momentText) {
-                moments.push(momentText);
-                localStorage.setItem("moments", JSON.stringify(moments));
-                renderMoments();
-                document.getElementById("newMoment").value = "";
+            function renderMoments() {
+                momentsList.innerHTML = moments.map(function(moment) {
+                    return (
+                        '<div class="moment-card">' +
+                        '<h3>' + moment.title + '</h3>' +
+                        '<p>' + moment.date + '</p>' +
+                        '<p>' + (moment.description || '') + '</p>' +
+                        (moment.image 
+                            ? '<img src="' + moment.image + '" class="moment-image">' 
+                            : '') +
+                        '<button onclick="deleteMoment(\'' + moment.id + '\')" class="delete-btn">Delete</button>' +
+                        '</div>'
+                    );
+                }).join('');
             }
-        }
 
-        function deleteMoment(index) {
-            moments.splice(index, 1);
-            localStorage.setItem("moments", JSON.stringify(moments));
+            window.deleteMoment = function(id) {
+                moments = moments.filter(function(m) {
+                    return m.id !== id;
+                });
+                localStorage.setItem('couplesMoments', JSON.stringify(moments));
+                renderMoments();
+            };
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var imageInput = document.getElementById('moment-image');
+                var reader = new FileReader();
+
+                reader.onload = function(event) {
+                    var moment = {
+                        id: String(Date.now()),
+                        date: document.getElementById('moment-date').value,
+                        title: document.getElementById('moment-title').value,
+                        description: document.getElementById('moment-description').value,
+                        image: imageInput.files.length ? event.target.result : null
+                    };
+
+                    moments.unshift(moment);
+                    localStorage.setItem('couplesMoments', JSON.stringify(moments));
+                    renderMoments();
+                    form.reset();
+                };
+
+                if (imageInput.files.length) {
+                    reader.readAsDataURL(imageInput.files[0]);
+                } else {
+                    reader.onload({ target: { result: null } });
+                }
+            });
+
+            // Initial render
             renderMoments();
-        }
-
-        renderMoments();
+        })();
     </script>
 </body>
 </html>
